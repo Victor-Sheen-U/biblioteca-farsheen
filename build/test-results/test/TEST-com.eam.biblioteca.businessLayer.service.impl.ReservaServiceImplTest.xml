@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" tests="24" skipped="0" failures="0" errors="0" timestamp="2026-10-18T21:26:48.071Z" hostname="fedora" time="0.077">
+  <properties/>
+  <testcase name="crear reserva con libro inexistente lanza ResourceNotFoundException" classname="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" time="0.005"/>
+  <testcase name="listarPorUsuario retorna reservas cuando usuario existe" classname="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" time="0.003"/>
+  <testcase name="buscarPorId otro usuario ajeno lanza ForbiddenException" classname="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" time="0.004"/>
+  <testcase name="cancelarComoUsuario con inicio en menos de 24h lanza BadRequestException" classname="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" time="0.004"/>
+  <testcase name="listarTodas retorna la lista de reservas del DAO" classname="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" time="0.003"/>
+  <testcase name="listarMisReservas retorna las reservas del usuario autenticado" classname="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" time="0.003"/>
+  <testcase name="crear reserva con libro inhabilitado lanza ResourceNotFoundException" classname="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" time="0.003"/>
+  <testcase name="crear reserva con entrega anterior o igual al inicio lanza BadRequestException" classname="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" time="0.003"/>
+  <testcase name="cancelarComoAdmin reserva inexistente lanza ResourceNotFoundException" classname="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" time="0.003"/>
+  <testcase name="buscarPorId dueño de la reserva retorna ReservaDTO" classname="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" time="0.003"/>
+  <testcase name="buscarPorId cuando no existe lanza ResourceNotFoundException" classname="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" time="0.003"/>
+  <testcase name="cancelarComoAdmin cancela exitosamente incluso con inicio en menos de 24h" classname="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" time="0.003"/>
+  <testcase name="crear reserva con usuario inexistente lanza ResourceNotFoundException" classname="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" time="0.003"/>
+  <testcase name="listarPorUsuario cuando usuario no existe lanza ResourceNotFoundException" classname="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" time="0.003"/>
+  <testcase name="crear reserva con fecha de inicio pasada lanza BadRequestException" classname="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" time="0.003"/>
+  <testcase name="cancelarComoUsuario reserva finalizada lanza BadRequestException" classname="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" time="0.003"/>
+  <testcase name="cancelarComoUsuario reserva ya cancelada lanza BadRequestException" classname="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" time="0.002"/>
+  <testcase name="cancelarComoAdmin reserva ya cancelada lanza BadRequestException" classname="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" time="0.002"/>
+  <testcase name="cancelarComoUsuario reserva ajena lanza ForbiddenException" classname="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" time="0.003"/>
+  <testcase name="cancelarComoUsuario con inicio &gt; 24h cambia estado a CANCELADA" classname="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" time="0.002"/>
+  <testcase name="buscarPorId como admin retorna reserva aunque no sea el dueño" classname="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" time="0.001"/>
+  <testcase name="crear reserva OK asigna el ejemplar de menor id, estado ACTIVA y usuario del correo" classname="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" time="0.002"/>
+  <testcase name="cancelarComoUsuario reserva inexistente lanza ResourceNotFoundException" classname="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" time="0.002"/>
+  <testcase name="crear reserva sin ejemplares disponibles lanza BadRequestException" classname="com.eam.biblioteca.businessLayer.service.impl.ReservaServiceImplTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

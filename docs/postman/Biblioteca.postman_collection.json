@@ -1,0 +1,2508 @@
+{
+  "info": {
+    "_postman_id": "b1b1107e-ca01-49fa-9876-000000000001",
+    "name": "Biblioteca API REST",
+    "description": "Colección completa de pruebas para la API REST del Sistema de Gestión de Biblioteca (RFN1–RFN20 y Seguridad JWT).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (!pm.collectionVariables.get('suffix')) {",
+          "    pm.collectionVariables.set('suffix', Date.now());",
+          "}",
+          "const f = ms => new Date(Date.now() - new Date().getTimezoneOffset()*60000 + ms).toISOString().slice(0,19);",
+          "pm.collectionVariables.set('fechaLejanaInicio', f(10*86400000));",
+          "pm.collectionVariables.set('fechaLejanaEntrega', f(12*86400000));",
+          "pm.collectionVariables.set('fechaLejanaInstante', f(11*86400000));",
+          "pm.collectionVariables.set('fechaCercanaInicio', f(2*3600000));",
+          "pm.collectionVariables.set('fechaCercanaEntrega', f(5*3600000));"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "suffix",
+      "value": ""
+    },
+    {
+      "key": "fechaLejanaInicio",
+      "value": ""
+    },
+    {
+      "key": "fechaLejanaEntrega",
+      "value": ""
+    },
+    {
+      "key": "fechaLejanaInstante",
+      "value": ""
+    },
+    {
+      "key": "fechaCercanaInicio",
+      "value": ""
+    },
+    {
+      "key": "fechaCercanaEntrega",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "00 Usuarios y autenticación",
+      "item": [
+        {
+          "name": "CP01 - Registro público válido (Usuario A)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documentoIdentidad\": \"1001_{{suffix}}\",\n  \"nombreCompleto\": \"Usuario A Prueba\",\n  \"correo\": \"usuarioA_{{suffix}}@biblioteca.com\",\n  \"password\": \"Password123*\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Rol es USUARIO y sin password', function () {",
+                  "    pm.expect(json.rol).to.eql('USUARIO');",
+                  "    pm.expect(json.estado).to.be.true;",
+                  "    pm.expect(json.password).to.be.undefined;",
+                  "});",
+                  "pm.environment.set('idUsuarioA', json.idUsuario);",
+                  "pm.environment.set('correoUsuarioA', json.correo);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP02 - Registro con correo duplicado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documentoIdentidad\": \"1002_{{suffix}}\",\n  \"nombreCompleto\": \"Usuario Duplicado\",\n  \"correo\": \"usuarioA_{{suffix}}@biblioteca.com\",\n  \"password\": \"Password123*\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400', function () { pm.response.to.have.status(400); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Mensaje de error correcto', function () {",
+                  "    pm.expect(json.error).to.eql('Solicitud inválida');",
+                  "    pm.expect(json.message).to.include('correo');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP03 - Registro con datos inválidos (correo mal formado, password corta)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documentoIdentidad\": \"1003\",\n  \"nombreCompleto\": \"Invalido\",\n  \"correo\": \"correo-no-valido\",\n  \"password\": \"123\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400', function () { pm.response.to.have.status(400); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Error de validación en campos', function () {",
+                  "    pm.expect(json.error).to.eql('Error de validación en campos');",
+                  "    pm.expect(json.details).to.be.an('object');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Pre-Login Admin para obtener tokenAdmin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{adminCorreo}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login admin status 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.environment.set('tokenAdmin', json.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP04 - Admin crea usuario con rol ADMIN",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documentoIdentidad\": \"2001_{{suffix}}\",\n  \"nombreCompleto\": \"Admin Secundario\",\n  \"correo\": \"admin2_{{suffix}}@biblioteca.com\",\n  \"password\": \"Password123*\",\n  \"rol\": \"ADMIN\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.rol).to.eql('ADMIN');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registro Usuario B para pruebas",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documentoIdentidad\": \"1005_{{suffix}}\",\n  \"nombreCompleto\": \"Usuario B Prueba\",\n  \"correo\": \"usuarioB_{{suffix}}@biblioteca.com\",\n  \"password\": \"Password123*\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.environment.set('idUsuarioB', json.idUsuario);",
+                  "pm.environment.set('documentoUsuarioB', json.documentoIdentidad);",
+                  "pm.environment.set('correoUsuarioB', json.correo);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP05 - Login válido (Usuario A)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"usuarioA_{{suffix}}@biblioteca.com\",\n  \"password\": \"Password123*\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Token presente', function () {",
+                  "    pm.expect(json.token).to.be.a('string').and.not.empty;",
+                  "    pm.expect(json.tipoToken).to.eql('Bearer');",
+                  "});",
+                  "pm.environment.set('tokenUsuarioA', json.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Usuario B para obtener tokenUsuarioB",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"usuarioB_{{suffix}}@biblioteca.com\",\n  \"password\": \"Password123*\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.environment.set('tokenUsuarioB', json.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP06 - Login con password incorrecta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"usuarioA_{{suffix}}@biblioteca.com\",\n  \"password\": \"PasswordErronea123\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () { pm.response.to.have.status(401); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.error).to.eql('No autorizado');",
+                  "pm.expect(json.message).to.eql('Credenciales inválidas');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP07 - Buscar usuario por id (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{idUsuarioA}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{idUsuarioA}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.idUsuario).to.eql(parseInt(pm.environment.get('idUsuarioA')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP08 - Buscar usuario por documento (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/documento/1001_{{suffix}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "documento",
+                "1001_{{suffix}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.documentoIdentidad).to.eql('1001_' + pm.collectionVariables.get('suffix'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP09 - Buscar usuario por documento inexistente",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/documento/99999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "documento",
+                "99999999"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 404', function () { pm.response.to.have.status(404); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.error).to.eql('Recurso no encontrado');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP10 - GET /usuarios/{id} con token de USUARIO (403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUsuarioA}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{idUsuarioA}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{idUsuarioA}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 403', function () { pm.response.to.have.status(403); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.error).to.eql('Acceso denegado');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP11 - GET /libros/{id} sin token (401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/libros/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "libros",
+                "1"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () { pm.response.to.have.status(401); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.error).to.eql('No autenticado');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP12 - Token alterado (401)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer tokenInvalidoAlterado1234567890",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/libros/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "libros",
+                "1"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () { pm.response.to.have.status(401); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.error).to.eql('No autenticado');"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01 Soporte (géneros y autores)",
+      "item": [
+        {
+          "name": "CP13a - Crear género (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/generos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "generos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreGenero\": \"Novela_{{suffix}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.environment.set('idGenero', json.idGenero);",
+                  "pm.environment.set('nombreGenero', json.nombreGenero);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP13b - Crear género duplicado (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/generos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "generos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreGenero\": \"novela_{{suffix}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400', function () { pm.response.to.have.status(400); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.error).to.eql('Solicitud inválida');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP14a - Crear autor 1 (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/autores",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "autores"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreAutor\": \"Gabriel Garc\\u00eda M\\u00e1rquez_{{suffix}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.environment.set('idAutor1', json.idAutor);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP14b - Crear autor 2 (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/autores",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "autores"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreAutor\": \"Mario Vargas Llosa_{{suffix}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.environment.set('idAutor2', json.idAutor);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP14c - Listar géneros con USUARIO",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUsuarioA}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/generos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "generos"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json).to.be.an('array');"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 Libros y ejemplares",
+      "item": [
+        {
+          "name": "CP15 - Crear libro con 2 autores (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/libros",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "libros"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isbn\": \"978-01-{{suffix}}\",\n  \"titulo\": \"Cien A\\u00f1os_{{suffix}}\",\n  \"idGenero\": 1,\n  \"idsAutores\": [\n    1,\n    2\n  ]\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set('idGen', parseInt(pm.environment.get('idGenero')));",
+                  "pm.variables.set('idA1', parseInt(pm.environment.get('idAutor1')));",
+                  "pm.variables.set('idA2', parseInt(pm.environment.get('idAutor2')));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.estado).to.be.true;",
+                  "pm.expect(json.autores).to.have.lengthOf(2);",
+                  "pm.environment.set('idLibro', json.idLibro);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP16 - Crear libro con género inexistente (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/libros",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "libros"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isbn\": \"978-02-{{suffix}}\",\n  \"titulo\": \"Libro Error\",\n  \"idGenero\": 99999,\n  \"idsAutores\": [\n    1\n  ]\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 404', function () { pm.response.to.have.status(404); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.error).to.eql('Recurso no encontrado');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP17 - Crear libro con token de USUARIO (403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUsuarioA}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/libros",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "libros"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isbn\": \"978-03-{{suffix}}\",\n  \"titulo\": \"Libro Usuario\",\n  \"idGenero\": 1,\n  \"idsAutores\": [\n    1\n  ]\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 403', function () { pm.response.to.have.status(403); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.error).to.eql('Acceso denegado');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP18 - Crear 2 ejemplares del libro (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/libros/{{idLibro}}/ejemplares",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "libros",
+                "{{idLibro}}",
+                "ejemplares"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cantidad\": 2\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json).to.have.lengthOf(2);",
+                  "pm.expect(json[0].estadoDisponibilidad).to.eql('DISPONIBLE');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP19 - Crear ejemplares de libro inexistente (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/libros/99999/ejemplares",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "libros",
+                "99999",
+                "ejemplares"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cantidad\": 1\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 404', function () { pm.response.to.have.status(404); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.error).to.eql('Recurso no encontrado');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP20 - Buscar libro por id (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/libros/{{idLibro}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "libros",
+                "{{idLibro}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.idLibro).to.eql(parseInt(pm.environment.get('idLibro')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP21 - Buscar libro por id inexistente (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/libros/9999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "libros",
+                "9999"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 404', function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP22 - Buscar por título (USUARIO)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUsuarioA}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/libros/buscar/titulo?titulo=Cien%20Años_{{suffix}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "libros",
+                "buscar",
+                "titulo?titulo=Cien%20Años_{{suffix}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json).to.be.an('array').and.not.empty;"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP23 - Buscar por género (USUARIO)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUsuarioA}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/libros/buscar/genero?genero=Novela_{{suffix}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "libros",
+                "buscar",
+                "genero?genero=Novela_{{suffix}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json).to.be.an('array').and.not.empty;"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP24a - Buscar por autor 1 (USUARIO)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUsuarioA}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/libros/buscar/autor?autor=García%20Márquez_{{suffix}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "libros",
+                "buscar",
+                "autor?autor=García%20Márquez_{{suffix}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json).to.be.an('array').and.not.empty;",
+                  "pm.expect(json[0].autores).to.have.lengthOf(2);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP24b - Buscar por autor 2 (USUARIO)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUsuarioA}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/libros/buscar/autor?autor=Vargas%20Llosa_{{suffix}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "libros",
+                "buscar",
+                "autor?autor=Vargas%20Llosa_{{suffix}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json).to.be.an('array').and.not.empty;",
+                  "pm.expect(json[0].autores).to.have.lengthOf(2);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP25 - Actualizar libro (admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/libros/{{idLibro}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "libros",
+                "{{idLibro}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isbn\": \"978-01-{{suffix}}-EDIT\",\n  \"titulo\": \"Cien A\\u00f1os Editado_{{suffix}}\",\n  \"idGenero\": 1,\n  \"idsAutores\": [\n    1,\n    2\n  ]\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set('idGen', parseInt(pm.environment.get('idGenero')));",
+                  "pm.variables.set('idA1', parseInt(pm.environment.get('idAutor1')));",
+                  "pm.variables.set('idA2', parseInt(pm.environment.get('idAutor2')));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.titulo).to.include('Editado');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP26 - Actualizar libro inexistente (admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/libros/99999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "libros",
+                "99999"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isbn\": \"978-01-XX\",\n  \"titulo\": \"Inexistente\",\n  \"idGenero\": 1,\n  \"idsAutores\": [\n    1\n  ]\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 404', function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 Reservas",
+      "item": [
+        {
+          "name": "CP27 - Reservar (USUARIO A) rango lejano (+10 días)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUsuarioA}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idLibro\": 1,\n  \"fechaInicio\": \"{{fechaLejanaInicio}}\",\n  \"fechaEntrega\": \"{{fechaLejanaEntrega}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set('idLibroInt', parseInt(pm.environment.get('idLibro')));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.estadoReserva).to.eql('ACTIVA');",
+                  "pm.expect(json.idEjemplar).to.be.a('number');",
+                  "pm.environment.set('idReservaLejana', json.idReserva);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP28 - Disponibilidad dentro de ese rango (queda 1 ejemplar)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUsuarioA}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/libros/{{idLibro}}/disponibilidad?fechaHora={{fechaLejanaInstante}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "libros",
+                "{{idLibro}}",
+                "disponibilidad?fechaHora={{fechaLejanaInstante}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.disponible).to.be.true;",
+                  "pm.expect(json.ejemplaresDisponibles).to.eql(1);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP29 - Segunda reserva del mismo rango (USUARIO B)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUsuarioB}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idLibro\": 1,\n  \"fechaInicio\": \"{{fechaLejanaInicio}}\",\n  \"fechaEntrega\": \"{{fechaLejanaEntrega}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set('idLibroInt', parseInt(pm.environment.get('idLibro')));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.estadoReserva).to.eql('ACTIVA');",
+                  "pm.environment.set('idReservaLejanaB', json.idReserva);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP30 - Tercera reserva del mismo rango (400 sin ejemplares)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUsuarioA}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idLibro\": 1,\n  \"fechaInicio\": \"{{fechaLejanaInicio}}\",\n  \"fechaEntrega\": \"{{fechaLejanaEntrega}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set('idLibroInt', parseInt(pm.environment.get('idLibro')));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400', function () { pm.response.to.have.status(400); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.message).to.include('No hay ejemplares disponibles');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP31 - Disponibilidad dentro del rango (ya ocupados -> false)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUsuarioA}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/libros/{{idLibro}}/disponibilidad?fechaHora={{fechaLejanaInstante}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "libros",
+                "{{idLibro}}",
+                "disponibilidad?fechaHora={{fechaLejanaInstante}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.disponible).to.be.false;",
+                  "pm.expect(json.ejemplaresDisponibles).to.eql(0);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP32 - Reserva con entrega anterior al inicio (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUsuarioA}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idLibro\": 1,\n  \"fechaInicio\": \"{{fechaLejanaEntrega}}\",\n  \"fechaEntrega\": \"{{fechaLejanaInicio}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set('idLibroInt', parseInt(pm.environment.get('idLibro')));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400', function () { pm.response.to.have.status(400); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.message).to.include('posterior');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP33 - Dueño consulta su reserva (Usuario A)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUsuarioA}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservas/{{idReservaLejana}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservas",
+                "{{idReservaLejana}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.idReserva).to.eql(parseInt(pm.environment.get('idReservaLejana')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP34 - Otro usuario consulta esa reserva (Usuario B sobre A -> 403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUsuarioB}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservas/{{idReservaLejana}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservas",
+                "{{idReservaLejana}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 403', function () { pm.response.to.have.status(403); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.error).to.eql('Acceso denegado');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP35 - Reserva inexistente (404)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservas/99999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservas",
+                "99999"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 404', function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP36a - Listar todas las reservas (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservas"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json).to.be.an('array');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP36b - Listar todas las reservas con USUARIO (403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUsuarioA}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservas"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 403', function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP37 - Listar reservas de un usuario (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservas/usuario/{{idUsuarioA}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservas",
+                "usuario",
+                "{{idUsuarioA}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json).to.be.an('array');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP38 - Mis reservas (Usuario A)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUsuarioA}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservas/mis-reservas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservas",
+                "mis-reservas"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json).to.be.an('array');",
+                  "pm.expect(json.every(r => r.idUsuario == pm.environment.get('idUsuarioA'))).to.be.true;"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP39 - Detalle del libro (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/libros/{{idLibro}}/detalle",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "libros",
+                "{{idLibro}}",
+                "detalle"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.totalReservas).to.be.at.least(2);",
+                  "pm.expect(json.reservas).to.be.an('array');"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 Cancelaciones",
+      "item": [
+        {
+          "name": "CP40 - Cancelar reserva con inicio > 24 h (Usuario A)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUsuarioA}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservas/{{idReservaLejana}}/cancelar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservas",
+                "{{idReservaLejana}}",
+                "cancelar"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.estadoReserva).to.eql('CANCELADA');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear reserva cercana para probar límite de 24h",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUsuarioA}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idLibro\": 1,\n  \"fechaInicio\": \"{{fechaCercanaInicio}}\",\n  \"fechaEntrega\": \"{{fechaCercanaEntrega}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set('idLibroInt', parseInt(pm.environment.get('idLibro')));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.environment.set('idReservaCercana', json.idReserva);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP41 - Cancelar reserva con inicio en < 24 h (400)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUsuarioA}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservas/{{idReservaCercana}}/cancelar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservas",
+                "{{idReservaCercana}}",
+                "cancelar"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400', function () { pm.response.to.have.status(400); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.message).to.include('24 horas');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP42 - Cancelar reserva ya cancelada (400)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUsuarioA}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservas/{{idReservaLejana}}/cancelar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservas",
+                "{{idReservaLejana}}",
+                "cancelar"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400', function () { pm.response.to.have.status(400); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.message).to.include('ya está cancelada');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP43 - Cancelar reserva ajena (Usuario B sobre A -> 403)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUsuarioB}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservas/{{idReservaCercana}}/cancelar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservas",
+                "{{idReservaCercana}}",
+                "cancelar"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 403', function () { pm.response.to.have.status(403); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.error).to.eql('Acceso denegado');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP44 - Admin cancela la reserva de < 24 h",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservas/{{idReservaCercana}}/cancelar-admin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservas",
+                "{{idReservaCercana}}",
+                "cancelar-admin"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.estadoReserva).to.eql('CANCELADA');"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 Inhabilitaciones",
+      "item": [
+        {
+          "name": "CP45 - Deshabilitar usuario B (admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/documento/{{documentoUsuarioB}}/deshabilitar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "documento",
+                "{{documentoUsuarioB}}",
+                "deshabilitar"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.estado).to.be.false;"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP46 - Login del usuario B deshabilitado (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"usuarioB_{{suffix}}@biblioteca.com\",\n  \"password\": \"Password123*\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () { pm.response.to.have.status(401); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.message).to.eql('Credenciales inválidas');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP47 - Inhabilitar libro (admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/libros/{{idLibro}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "libros",
+                "{{idLibro}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 204', function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP48 - Buscar por título el libro inhabilitado (200 sin ese libro)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUsuarioA}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/libros/buscar/titulo?titulo=Cien%20Años%20Editado_{{suffix}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "libros",
+                "buscar",
+                "titulo?titulo=Cien%20Años%20Editado_{{suffix}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json).to.be.an('array').that.is.empty;"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP49 - Disponibilidad de libro inhabilitado (404)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUsuarioA}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/libros/{{idLibro}}/disponibilidad?fechaHora={{fechaLejanaInstante}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "libros",
+                "{{idLibro}}",
+                "disponibilidad?fechaHora={{fechaLejanaInstante}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 404', function () { pm.response.to.have.status(404); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json.error).to.eql('Recurso no encontrado');"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

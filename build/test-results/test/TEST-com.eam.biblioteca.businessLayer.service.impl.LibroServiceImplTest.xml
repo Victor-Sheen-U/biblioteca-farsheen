@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.eam.biblioteca.businessLayer.service.impl.LibroServiceImplTest" tests="17" skipped="0" failures="0" errors="0" timestamp="2026-10-18T21:26:47.971Z" hostname="fedora" time="0.099">
+  <properties/>
+  <testcase name="buscarPorId cuando existe retorna LibroDTO" classname="com.eam.biblioteca.businessLayer.service.impl.LibroServiceImplTest" time="0.035"/>
+  <testcase name="actualizar libro inexistente lanza ResourceNotFoundException" classname="com.eam.biblioteca.businessLayer.service.impl.LibroServiceImplTest" time="0.004"/>
+  <testcase name="consultarDisponibilidad con ejemplares disponibles retorna disponible=true y cantidad" classname="com.eam.biblioteca.businessLayer.service.impl.LibroServiceImplTest" time="0.004"/>
+  <testcase name="consultarDisponibilidad de libro inhabilitado lanza ResourceNotFoundException" classname="com.eam.biblioteca.businessLayer.service.impl.LibroServiceImplTest" time="0.004"/>
+  <testcase name="actualizar libro exitoso modifica datos y conserva entidad" classname="com.eam.biblioteca.businessLayer.service.impl.LibroServiceImplTest" time="0.005"/>
+  <testcase name="consultarDisponibilidad sin ejemplares disponibles retorna disponible=false y 0" classname="com.eam.biblioteca.businessLayer.service.impl.LibroServiceImplTest" time="0.003"/>
+  <testcase name="buscarPorId cuando no existe lanza ResourceNotFoundException" classname="com.eam.biblioteca.businessLayer.service.impl.LibroServiceImplTest" time="0.003"/>
+  <testcase name="buscarPorGenero retorna lista de libros del DAO" classname="com.eam.biblioteca.businessLayer.service.impl.LibroServiceImplTest" time="0.002"/>
+  <testcase name="crear con género inexistente lanza ResourceNotFoundException" classname="com.eam.biblioteca.businessLayer.service.impl.LibroServiceImplTest" time="0.004"/>
+  <testcase name="inhabilitar cambia el estado a false" classname="com.eam.biblioteca.businessLayer.service.impl.LibroServiceImplTest" time="0.003"/>
+  <testcase name="consultarDetalle con libro inexistente lanza ResourceNotFoundException" classname="com.eam.biblioteca.businessLayer.service.impl.LibroServiceImplTest" time="0.005"/>
+  <testcase name="crear libro exitoso con estado true, género y autores asignados" classname="com.eam.biblioteca.businessLayer.service.impl.LibroServiceImplTest" time="0.003"/>
+  <testcase name="crear con autor inexistente lanza ResourceNotFoundException" classname="com.eam.biblioteca.businessLayer.service.impl.LibroServiceImplTest" time="0.003"/>
+  <testcase name="buscarPorTitulo retorna lista de libros del DAO" classname="com.eam.biblioteca.businessLayer.service.impl.LibroServiceImplTest" time="0.003"/>
+  <testcase name="inhabilitar libro inexistente lanza ResourceNotFoundException" classname="com.eam.biblioteca.businessLayer.service.impl.LibroServiceImplTest" time="0.003"/>
+  <testcase name="buscarPorAutor retorna lista de libros del DAO" classname="com.eam.biblioteca.businessLayer.service.impl.LibroServiceImplTest" time="0.003"/>
+  <testcase name="consultarDetalle retorna LibroDetalleDTO con total y lista de reservas" classname="com.eam.biblioteca.businessLayer.service.impl.LibroServiceImplTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

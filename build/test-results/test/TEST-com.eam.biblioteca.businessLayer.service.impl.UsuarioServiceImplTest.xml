@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.eam.biblioteca.businessLayer.service.impl.UsuarioServiceImplTest" tests="12" skipped="0" failures="0" errors="0" timestamp="2026-10-18T21:26:48.149Z" hostname="fedora" time="0.021">
+  <properties/>
+  <testcase name="crearComoAdmin con rol ADMIN guarda rol ADMIN" classname="com.eam.biblioteca.businessLayer.service.impl.UsuarioServiceImplTest" time="0.002"/>
+  <testcase name="deshabilitarPorDocumento cuando no existe lanza ResourceNotFoundException" classname="com.eam.biblioteca.businessLayer.service.impl.UsuarioServiceImplTest" time="0.002"/>
+  <testcase name="deshabilitarPorDocumento cuando existe cambia estado a false y guarda" classname="com.eam.biblioteca.businessLayer.service.impl.UsuarioServiceImplTest" time="0.002"/>
+  <testcase name="buscarPorDocumento cuando existe retorna UsuarioDTO" classname="com.eam.biblioteca.businessLayer.service.impl.UsuarioServiceImplTest" time="0.002"/>
+  <testcase name="buscarPorDocumento cuando no existe lanza ResourceNotFoundException" classname="com.eam.biblioteca.businessLayer.service.impl.UsuarioServiceImplTest" time="0.002"/>
+  <testcase name="crearComoAdmin con rol inválido lanza BadRequestException" classname="com.eam.biblioteca.businessLayer.service.impl.UsuarioServiceImplTest" time="0.001"/>
+  <testcase name="buscarPorId cuando no existe lanza ResourceNotFoundException" classname="com.eam.biblioteca.businessLayer.service.impl.UsuarioServiceImplTest" time="0.001"/>
+  <testcase name="buscarPorId cuando existe retorna UsuarioDTO" classname="com.eam.biblioteca.businessLayer.service.impl.UsuarioServiceImplTest" time="0.001"/>
+  <testcase name="registrar guarda usuario con rol USUARIO, estado true, correo normalizado y password hasheada" classname="com.eam.biblioteca.businessLayer.service.impl.UsuarioServiceImplTest" time="0.001"/>
+  <testcase name="registrar con correo duplicado lanza BadRequestException y nunca llama a save" classname="com.eam.biblioteca.businessLayer.service.impl.UsuarioServiceImplTest" time="0.001"/>
+  <testcase name="crearComoAdmin sin rol asigna por defecto USUARIO" classname="com.eam.biblioteca.businessLayer.service.impl.UsuarioServiceImplTest" time="0.001"/>
+  <testcase name="registrar con documento duplicado lanza BadRequestException y nunca llama a save" classname="com.eam.biblioteca.businessLayer.service.impl.UsuarioServiceImplTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

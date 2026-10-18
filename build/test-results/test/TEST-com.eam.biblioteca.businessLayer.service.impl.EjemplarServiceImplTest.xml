@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.eam.biblioteca.businessLayer.service.impl.EjemplarServiceImplTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-10-18T21:26:47.852Z" hostname="fedora" time="0.078">
+  <properties/>
+  <testcase name="crear con libro inexistente lanza ResourceNotFoundException" classname="com.eam.biblioteca.businessLayer.service.impl.EjemplarServiceImplTest" time="0.066"/>
+  <testcase name="listarPorLibro cuando libro no existe lanza ResourceNotFoundException" classname="com.eam.biblioteca.businessLayer.service.impl.EjemplarServiceImplTest" time="0.003"/>
+  <testcase name="listarPorLibro cuando libro existe retorna lista de ejemplares" classname="com.eam.biblioteca.businessLayer.service.impl.EjemplarServiceImplTest" time="0.002"/>
+  <testcase name="crear con cantidad 3 crea 3 ejemplares DISPONIBLE" classname="com.eam.biblioteca.businessLayer.service.impl.EjemplarServiceImplTest" time="0.003"/>
+  <testcase name="crear con cantidad nula o dto nulo crea 1 ejemplar" classname="com.eam.biblioteca.businessLayer.service.impl.EjemplarServiceImplTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
