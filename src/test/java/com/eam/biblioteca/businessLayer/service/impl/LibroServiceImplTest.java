@@ -347,4 +347,76 @@ class LibroServiceImplTest {
         assertTrue(ex.getMessage().contains("99"));
         verify(reservaDao, never()).findByLibroId(any());
     }
+
+    @Test
+    @DisplayName("crear libro persiste anioPublicacion cuando viene informado")
+    void crear_ConAnioPublicacion_GuardaAnio() {
+        LibroCreateDTO dto = new LibroCreateDTO("978-012345", "Cien años de soledad", 1L, List.of(10L), 1967);
+        GeneroEntity genero = new GeneroEntity(1L, "Ficción");
+        AutorEntity autor = new AutorEntity(10L, "Gabriel García Márquez");
+
+        when(generoDao.findEntityById(1L)).thenReturn(Optional.of(genero));
+        when(autorDao.findEntitiesByIds(List.of(10L))).thenReturn(List.of(autor));
+
+        LibroDTO expectedDTO = new LibroDTO(1L, "978-012345", "Cien años de soledad", 1L, "Ficción",
+                List.of(new AutorDTO(10L, "Gabriel García Márquez")), 1967, true);
+        when(libroDao.save(any(LibroEntity.class))).thenReturn(expectedDTO);
+
+        LibroDTO result = libroService.crear(dto);
+
+        assertEquals(1967, result.getAnioPublicacion());
+        ArgumentCaptor<LibroEntity> captor = ArgumentCaptor.forClass(LibroEntity.class);
+        verify(libroDao).save(captor.capture());
+        assertEquals(1967, captor.getValue().getAnioPublicacion());
+    }
+
+    @Test
+    @DisplayName("actualizar libro conserva anioPublicacion previo si dto.anioPublicacion es null")
+    void actualizar_AnioPublicacionNull_ConservaValorPrevio() {
+        Long id = 1L;
+        LibroUpdateDTO dto = new LibroUpdateDTO("978-012345", "Rayuela", 1L, List.of(10L), null);
+        LibroEntity existing = new LibroEntity(id, "978-012345", "Rayuela", new GeneroEntity(1L, "Novela"), new HashSet<>(), 1963, true);
+        GeneroEntity genero = new GeneroEntity(1L, "Novela");
+        AutorEntity autor = new AutorEntity(10L, "Julio Cortázar");
+
+        when(libroDao.findEntityById(id)).thenReturn(Optional.of(existing));
+        when(generoDao.findEntityById(1L)).thenReturn(Optional.of(genero));
+        when(autorDao.findEntitiesByIds(List.of(10L))).thenReturn(List.of(autor));
+        when(libroDao.save(existing)).thenReturn(new LibroDTO(id, "978-012345", "Rayuela", 1L, "Novela", List.of(), 1963, true));
+
+        libroService.actualizar(id, dto);
+
+        assertEquals(1963, existing.getAnioPublicacion());
+    }
+
+    @Test
+    @DisplayName("listarCatalogoPublico construye LibroCatalogoDTO con totales y disponibles sin N+1")
+    void listarCatalogoPublico_RetornaListaAgregada() {
+        GeneroEntity genero = new GeneroEntity(1L, "Ficción");
+        AutorEntity autor = new AutorEntity(10L, "Gabriel García Márquez");
+        java.util.Set<AutorEntity> autores = new java.util.LinkedHashSet<>(List.of(autor));
+        LibroEntity libro = new LibroEntity(1L, "978-0307474728", "Cien años de soledad", genero, autores, 1967, true);
+
+        when(libroDao.findAllHabilitadosConRelaciones()).thenReturn(List.of(libro));
+        when(ejemplarDao.contarTotalesPorLibroHabilitado()).thenReturn(java.util.Map.of(1L, 4));
+        when(ejemplarDao.contarDisponiblesEnInstantePorLibroHabilitado(any(LocalDateTime.class))).thenReturn(java.util.Map.of(1L, 3));
+
+        List<LibroCatalogoDTO> result = libroService.listarCatalogoPublico();
+
+        assertEquals(1, result.size());
+        LibroCatalogoDTO item = result.get(0);
+        assertEquals(1L, item.getIdLibro());
+        assertEquals("Cien años de soledad", item.getTitulo());
+        assertEquals(1967, item.getAnioPublicacion());
+        assertEquals(4, item.getTotalEjemplares());
+        assertEquals(3, item.getEjemplaresDisponibles());
+    }
+
+    @Test
+    @DisplayName("obtenerLibroCatalogoPublico lanza ResourceNotFoundException si no existe o está inhabilitado")
+    void obtenerLibroCatalogoPublico_Inexistente_LanzaResourceNotFoundException() {
+        when(libroDao.findHabilitadoByIdConRelaciones(99L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> libroService.obtenerLibroCatalogoPublico(99L));
+    }
 }

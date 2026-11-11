@@ -1,6 +1,7 @@
 package com.eam.biblioteca.businessLayer.service;
 
 import com.eam.biblioteca.businessLayer.dto.libro.DisponibilidadDTO;
+import com.eam.biblioteca.businessLayer.dto.libro.LibroCatalogoDTO;
 import com.eam.biblioteca.businessLayer.dto.libro.LibroCreateDTO;
 import com.eam.biblioteca.businessLayer.dto.libro.LibroDTO;
 import com.eam.biblioteca.businessLayer.dto.libro.LibroDetalleDTO;
@@ -28,4 +29,8 @@ public interface LibroService {
     DisponibilidadDTO consultarDisponibilidad(Long idLibro, LocalDateTime fechaHora);
 
     LibroDetalleDTO consultarDetalle(Long idLibro);
+
+    List<LibroCatalogoDTO> listarCatalogoPublico();
+
+    LibroCatalogoDTO obtenerLibroCatalogoPublico(Long idLibro);
 }

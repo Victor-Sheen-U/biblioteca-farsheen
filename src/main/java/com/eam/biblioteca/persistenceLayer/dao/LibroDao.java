@@ -25,6 +25,14 @@ public class LibroDao {
         return libroRepository.findById(id);
     }
 
+    public List<LibroEntity> findAllHabilitadosConRelaciones() {
+        return libroRepository.findAllHabilitadosConRelaciones();
+    }
+
+    public Optional<LibroEntity> findHabilitadoByIdConRelaciones(Long id) {
+        return libroRepository.findHabilitadoByIdConRelaciones(id);
+    }
+
     public List<LibroDTO> buscarPorTitulo(String titulo) {
         return libroMapper.toDTOList(libroRepository.buscarPorTitulo(titulo));
     }

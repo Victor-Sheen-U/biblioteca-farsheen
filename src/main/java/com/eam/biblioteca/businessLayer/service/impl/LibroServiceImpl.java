@@ -1,6 +1,8 @@
 package com.eam.biblioteca.businessLayer.service.impl;
 
+import com.eam.biblioteca.businessLayer.dto.autor.AutorDTO;
 import com.eam.biblioteca.businessLayer.dto.libro.DisponibilidadDTO;
+import com.eam.biblioteca.businessLayer.dto.libro.LibroCatalogoDTO;
 import com.eam.biblioteca.businessLayer.dto.libro.LibroCreateDTO;
 import com.eam.biblioteca.businessLayer.dto.libro.LibroDTO;
 import com.eam.biblioteca.businessLayer.dto.libro.LibroDetalleDTO;
@@ -21,8 +23,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -50,6 +54,7 @@ public class LibroServiceImpl implements LibroService {
         libro.setTitulo(dto.getTitulo().trim());
         libro.setGenero(genero);
         libro.setAutores(new HashSet<>(autoresList));
+        libro.setAnioPublicacion(dto.getAnioPublicacion());
         libro.setEstado(true);
 
         return libroDao.save(libro);
@@ -71,6 +76,9 @@ public class LibroServiceImpl implements LibroService {
         libro.setTitulo(dto.getTitulo().trim());
         libro.setGenero(genero);
         libro.setAutores(new HashSet<>(autoresList));
+        if (dto.getAnioPublicacion() != null) {
+            libro.setAnioPublicacion(dto.getAnioPublicacion());
+        }
 
         return libroDao.save(libro);
     }
@@ -131,6 +139,55 @@ public class LibroServiceImpl implements LibroService {
 
         List<ReservaDTO> reservas = reservaDao.findByLibroId(idLibro);
         return new LibroDetalleDTO(libroDTO, reservas.size(), reservas);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<LibroCatalogoDTO> listarCatalogoPublico() {
+        List<LibroEntity> libros = libroDao.findAllHabilitadosConRelaciones();
+        LocalDateTime ahora = LocalDateTime.now();
+        Map<Long, Integer> totalesPorLibro = ejemplarDao.contarTotalesPorLibroHabilitado();
+        Map<Long, Integer> disponiblesPorLibro = ejemplarDao.contarDisponiblesEnInstantePorLibroHabilitado(ahora);
+
+        return libros.stream()
+                .map(libro -> mapearACatalogoDTO(
+                        libro,
+                        totalesPorLibro.getOrDefault(libro.getIdLibro(), 0),
+                        disponiblesPorLibro.getOrDefault(libro.getIdLibro(), 0)
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public LibroCatalogoDTO obtenerLibroCatalogoPublico(Long idLibro) {
+        LibroEntity libro = libroDao.findHabilitadoByIdConRelaciones(idLibro)
+                .orElseThrow(() -> new ResourceNotFoundException("Libro no encontrado con ID: " + idLibro));
+
+        LocalDateTime ahora = LocalDateTime.now();
+        int totalEjemplares = ejemplarDao.contarTotalPorLibro(idLibro);
+        int disponibles = ejemplarDao.contarDisponiblesEnInstante(idLibro, ahora);
+
+        return mapearACatalogoDTO(libro, totalEjemplares, disponibles);
+    }
+
+    private LibroCatalogoDTO mapearACatalogoDTO(LibroEntity libro, int totalEjemplares, int disponibles) {
+        List<AutorDTO> autores = libro.getAutores().stream()
+                .sorted(Comparator.comparing(AutorEntity::getNombreAutor, String.CASE_INSENSITIVE_ORDER))
+                .map(a -> new AutorDTO(a.getIdAutor(), a.getNombreAutor()))
+                .collect(Collectors.toList());
+
+        return new LibroCatalogoDTO(
+                libro.getIdLibro(),
+                libro.getIsbn(),
+                libro.getTitulo(),
+                libro.getGenero().getIdGenero(),
+                libro.getGenero().getNombreGenero(),
+                autores,
+                libro.getAnioPublicacion(),
+                totalEjemplares,
+                disponibles
+        );
     }
 
     private void validarAutores(List<Long> idsPedidos, List<AutorEntity> autoresEncontrados) {
