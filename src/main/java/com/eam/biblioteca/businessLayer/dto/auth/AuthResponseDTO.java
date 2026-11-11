@@ -25,4 +25,11 @@ public class AuthResponseDTO {
 
     @Schema(description = "Rol del usuario autenticado", example = "ADMIN")
     private String rol;
+
+    @Schema(description = "Nombre completo del usuario autenticado", example = "Administrador")
+    private String nombreCompleto;
+
+    public AuthResponseDTO(String token, String tipoToken, Long expiraEnMs, String correo, String rol) {
+        this(token, tipoToken, expiraEnMs, correo, rol, null);
+    }
 }

@@ -38,8 +38,21 @@ public class LibroEntity {
             joinColumns = @JoinColumn(name = "id_libro"),
             inverseJoinColumns = @JoinColumn(name = "id_autor")
     )
+    @OrderBy("nombreAutor ASC")
     private Set<AutorEntity> autores = new HashSet<>();
+
+    @Column(name = "anio_publicacion")
+    private Integer anioPublicacion;
 
     @Column(name = "estado", nullable = false)
     private Boolean estado;
+
+    public LibroEntity(Long idLibro, String isbn, String titulo, GeneroEntity genero, Set<AutorEntity> autores, Boolean estado) {
+        this.idLibro = idLibro;
+        this.isbn = isbn;
+        this.titulo = titulo;
+        this.genero = genero;
+        this.autores = autores;
+        this.estado = estado;
+    }
 }

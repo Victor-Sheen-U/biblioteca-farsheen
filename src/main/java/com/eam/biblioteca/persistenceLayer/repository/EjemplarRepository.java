@@ -38,4 +38,26 @@ public interface EjemplarRepository extends JpaRepository<EjemplarEntity, Long> 
         ORDER BY e.idEjemplar ASC""")
     List<EjemplarEntity> findDisponiblesEnInstante(@Param("idLibro") Long idLibro,
             @Param("instante") LocalDateTime instante);
+
+    @Query("SELECT COUNT(e.idEjemplar) FROM EjemplarEntity e WHERE e.libro.idLibro = :idLibro")
+    long countByLibroIdLibro(@Param("idLibro") Long idLibro);
+
+    @Query("""
+        SELECT e.libro.idLibro, COUNT(e.idEjemplar)
+        FROM EjemplarEntity e
+        WHERE e.libro.estado = true
+        GROUP BY e.libro.idLibro""")
+    List<Object[]> contarTotalPorLibroHabilitado();
+
+    @Query("""
+        SELECT e.libro.idLibro, COUNT(e.idEjemplar)
+        FROM EjemplarEntity e
+        WHERE e.libro.estado = true
+          AND e.estadoDisponibilidad = 'DISPONIBLE'
+          AND NOT EXISTS (
+              SELECT r.idReserva FROM ReservaEntity r
+              WHERE r.ejemplar = e AND r.estadoReserva = 'ACTIVA'
+                AND r.fechaInicio <= :instante AND r.fechaEntrega > :instante)
+        GROUP BY e.libro.idLibro""")
+    List<Object[]> contarDisponiblesEnInstantePorLibroHabilitado(@Param("instante") LocalDateTime instante);
 }

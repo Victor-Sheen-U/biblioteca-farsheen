@@ -2501,6 +2501,65 @@
               }
             }
           ]
+        },
+        {
+          "name": "CP50 - Catálogo público sin token (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/catalogo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "catalogo"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.expect(json).to.be.an('array');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CP51 - Detalle de catálogo público para libro inhabilitado (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/catalogo/{{idLibro}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "catalogo",
+                "{{idLibro}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 404', function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ]
         }
       ]
     }
