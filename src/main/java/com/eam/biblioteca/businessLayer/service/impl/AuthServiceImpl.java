@@ -37,6 +37,6 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String token = jwtService.generarToken(usuario.getCorreo(), usuario.getRol());
-        return new AuthResponseDTO(token, "Bearer", jwtService.getExpirationMs(), usuario.getCorreo(), usuario.getRol());
+        return new AuthResponseDTO(token, "Bearer", jwtService.getExpirationMs(), usuario.getCorreo(), usuario.getRol(), usuario.getNombreCompleto());
     }
 }
