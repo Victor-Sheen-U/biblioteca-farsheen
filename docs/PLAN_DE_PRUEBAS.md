@@ -40,10 +40,11 @@ El alcance de las pruebas abarca el 100% de los endpoints expuestos bajo el pref
    - Creación de géneros (`POST /generos`) y listado (`GET /generos`).
    - Creación de autores (`POST /autores`) y listado (`GET /autores`).
 
-3. **Gestión de Libros y Ejemplares:**
-   - RFN1: Registro de nuevo libro con autores y género (`POST /libros`).
+3. **Gestión de Libros, Catálogo Público y Ejemplares:**
+   - Catálogo público: Listado público de libros habilitados con disponibilidad (`GET /catalogo`) y detalle público por ID (`GET /catalogo/{id}`).
+   - RFN1: Registro de nuevo libro con autores, género y año de publicación opcional (`POST /libros`).
    - RFN2: Inhabilitación lógica de libro (`DELETE /libros/{id}`).
-   - RFN3: Búsqueda de libro por ID (`GET /libros/{id}`).
+   - RFN3: Búsqueda administrativa de libro por ID (`GET /libros/{id}`).
    - RFN4: Búsqueda insensible a mayúsculas por título (`GET /libros/buscar/titulo?titulo=...`).
    - RFN5: Búsqueda por género (`GET /libros/buscar/genero?genero=...`).
    - RFN6: Búsqueda por autor (`GET /libros/buscar/autor?autor=...`).
@@ -966,6 +967,32 @@ Se aplica un enfoque de pruebas en profundidad que combina:
 - **Código esperado:** `404 Not Found`
 - **Cuerpo esperado:** JSON de error con `status: 404`, indicando que el libro no existe o está inhabilitado.
 - **Prueba exitosa si:** Devuelve 404 protegiendo las operaciones sobre entidades dadas de baja.
+
+---
+
+##### Caso de prueba: CP50 - Listar catálogo público sin autenticación
+- **Endpoint:** `GET /biblioteca/api/v1/catalogo`
+- **Método HTTP:** `GET`
+- **Descripción:** Consultar el catálogo público de libros habilitados sin necesidad de enviar token JWT, obteniendo `anioPublicacion`, `totalEjemplares` y `ejemplaresDisponibles`.
+- **Parámetros:** Ninguno.
+- **Headers:** Ninguno.
+- **Body:** N/A.
+- **Código esperado:** `200 OK`
+- **Cuerpo esperado:** Arreglo de `LibroCatalogoDTO` ordenado por título, excluyendo libros con `estado = false`.
+- **Prueba exitosa si:** Devuelve 200 sin requerir encabezado `Authorization` y ningún libro inhabilitado aparece en la lista.
+
+---
+
+##### Caso de prueba: CP51 - Detalle de libro en catálogo público por ID
+- **Endpoint:** `GET /biblioteca/api/v1/catalogo/{id}`
+- **Método HTTP:** `GET`
+- **Descripción:** Consultar la ficha pública de un libro habilitado por su identificador sin token JWT; si el libro está inhabilitado o no existe, retorna 404.
+- **Parámetros:** Path param: `id = {{idLibro}}`.
+- **Headers:** Ninguno.
+- **Body:** N/A.
+- **Código esperado:** `200 OK` para libro habilitado / `404 Not Found` para libro inhabilitado.
+- **Cuerpo esperado:** Objeto `LibroCatalogoDTO` con `idLibro`, `isbn`, `titulo`, `idGenero`, `nombreGenero`, `autores`, `anioPublicacion`, `totalEjemplares`, `ejemplaresDisponibles`.
+- **Prueba exitosa si:** Devuelve 200 cuando el libro está activo y 404 tras su inhabilitación.
 
 ---
 
