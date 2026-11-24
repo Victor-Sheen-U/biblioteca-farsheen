@@ -78,6 +78,7 @@ DROP TABLE IF EXISTS `libro`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `libro` (
   `id_libro` bigint(20) NOT NULL AUTO_INCREMENT,
+  `anio_publicacion` int(11) DEFAULT NULL,
   `estado` bit(1) NOT NULL,
   `isbn` varchar(20) NOT NULL,
   `titulo` varchar(200) NOT NULL,

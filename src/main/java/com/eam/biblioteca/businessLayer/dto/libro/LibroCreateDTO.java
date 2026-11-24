@@ -1,6 +1,8 @@
 package com.eam.biblioteca.businessLayer.dto.libro;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -34,4 +36,13 @@ public class LibroCreateDTO {
     @NotEmpty(message = "Debe indicar al menos un autor")
     @Schema(description = "Lista de identificadores de autores", example = "[1, 2]")
     private List<Long> idsAutores;
+
+    @Min(value = 1, message = "El año de publicación debe ser mayor o igual a 1")
+    @Max(value = 2100, message = "El año de publicación no puede superar 2100")
+    @Schema(description = "Año de publicación del libro (opcional)", example = "1967")
+    private Integer anioPublicacion;
+
+    public LibroCreateDTO(String isbn, String titulo, Long idGenero, List<Long> idsAutores) {
+        this(isbn, titulo, idGenero, idsAutores, null);
+    }
 }

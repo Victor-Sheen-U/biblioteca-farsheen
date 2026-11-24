@@ -56,6 +56,7 @@ class AuthServiceImplTest {
         assertEquals(7200000L, response.getExpiraEnMs());
         assertEquals("usuario@biblioteca.com", response.getCorreo());
         assertEquals("USUARIO", response.getRol());
+        assertEquals("Usuario Test", response.getNombreCompleto());
 
         verify(usuarioDao).findEntityByCorreo("usuario@biblioteca.com");
         verify(passwordEncoder).matches("MiPassword123", "$2a$10$hashed");

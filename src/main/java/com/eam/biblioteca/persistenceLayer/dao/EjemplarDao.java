@@ -8,7 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
@@ -32,5 +34,25 @@ public class EjemplarDao {
 
     public int contarDisponiblesEnInstante(Long idLibro, LocalDateTime instante) {
         return ejemplarRepository.findDisponiblesEnInstante(idLibro, instante).size();
+    }
+
+    public int contarTotalPorLibro(Long idLibro) {
+        return (int) ejemplarRepository.countByLibroIdLibro(idLibro);
+    }
+
+    public Map<Long, Integer> contarTotalesPorLibroHabilitado() {
+        Map<Long, Integer> resultado = new HashMap<>();
+        for (Object[] fila : ejemplarRepository.contarTotalPorLibroHabilitado()) {
+            resultado.put((Long) fila[0], ((Number) fila[1]).intValue());
+        }
+        return resultado;
+    }
+
+    public Map<Long, Integer> contarDisponiblesEnInstantePorLibroHabilitado(LocalDateTime instante) {
+        Map<Long, Integer> resultado = new HashMap<>();
+        for (Object[] fila : ejemplarRepository.contarDisponiblesEnInstantePorLibroHabilitado(instante)) {
+            resultado.put((Long) fila[0], ((Number) fila[1]).intValue());
+        }
+        return resultado;
     }
 }

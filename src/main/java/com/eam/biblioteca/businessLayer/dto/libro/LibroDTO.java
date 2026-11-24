@@ -32,6 +32,13 @@ public class LibroDTO {
     @Schema(description = "Lista de autores del libro")
     private List<AutorDTO> autores;
 
+    @Schema(description = "Año de publicación del libro", example = "1967")
+    private Integer anioPublicacion;
+
     @Schema(description = "Estado de habilitación del libro", example = "true")
     private Boolean estado;
+
+    public LibroDTO(Long idLibro, String isbn, String titulo, Long idGenero, String nombreGenero, List<AutorDTO> autores, Boolean estado) {
+        this(idLibro, isbn, titulo, idGenero, nombreGenero, autores, null, estado);
+    }
 }

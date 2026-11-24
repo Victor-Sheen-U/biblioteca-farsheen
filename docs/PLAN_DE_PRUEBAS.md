@@ -40,10 +40,11 @@ El alcance de las pruebas abarca el 100% de los endpoints expuestos bajo el pref
    - Creación de géneros (`POST /generos`) y listado (`GET /generos`).
    - Creación de autores (`POST /autores`) y listado (`GET /autores`).
 
-3. **Gestión de Libros y Ejemplares:**
-   - RFN1: Registro de nuevo libro con autores y género (`POST /libros`).
+3. **Gestión de Libros, Catálogo Público y Ejemplares:**
+   - Catálogo público: Listado público de libros habilitados con disponibilidad (`GET /catalogo`) y detalle público por ID (`GET /catalogo/{id}`).
+   - RFN1: Registro de nuevo libro con autores, género y año de publicación opcional (`POST /libros`).
    - RFN2: Inhabilitación lógica de libro (`DELETE /libros/{id}`).
-   - RFN3: Búsqueda de libro por ID (`GET /libros/{id}`).
+   - RFN3: Búsqueda administrativa de libro por ID (`GET /libros/{id}`).
    - RFN4: Búsqueda insensible a mayúsculas por título (`GET /libros/buscar/titulo?titulo=...`).
    - RFN5: Búsqueda por género (`GET /libros/buscar/genero?genero=...`).
    - RFN6: Búsqueda por autor (`GET /libros/buscar/autor?autor=...`).
@@ -969,6 +970,58 @@ Se aplica un enfoque de pruebas en profundidad que combina:
 
 ---
 
+##### Caso de prueba: CP50 - Listar catálogo público sin autenticación (SUP-5)
+- **Endpoint:** `GET /biblioteca/api/v1/catalogo`
+- **Método HTTP:** `GET`
+- **Descripción:** Consultar el catálogo público de libros habilitados sin necesidad de enviar token JWT, obteniendo `anioPublicacion`, `totalEjemplares` y `ejemplaresDisponibles` (tope 500).
+- **Parámetros:** Ninguno.
+- **Headers:** Ninguno.
+- **Body:** N/A.
+- **Código esperado:** `200 OK`
+- **Cuerpo esperado:** Arreglo de `LibroCatalogoDTO` ordenado por título, excluyendo libros con `estado = false`.
+- **Prueba exitosa si:** Devuelve 200 sin requerir encabezado `Authorization` y ningún libro inhabilitado aparece en la lista.
+
+---
+
+##### Caso de prueba: CP51 - Detalle de libro habilitado en catálogo público por ID (SUP-5)
+- **Endpoint:** `GET /biblioteca/api/v1/catalogo/{id}`
+- **Método HTTP:** `GET`
+- **Descripción:** Consultar la ficha pública de un libro habilitado por su identificador sin token JWT.
+- **Parámetros:** Path param: `id = {{idLibroActivo}}`.
+- **Headers:** Ninguno.
+- **Body:** N/A.
+- **Código esperado:** `200 OK`
+- **Cuerpo esperado:** Objeto `LibroCatalogoDTO` con `idLibro`, `isbn`, `titulo`, `idGenero`, `nombreGenero`, `autores`, `anioPublicacion`, `totalEjemplares`, `ejemplaresDisponibles`.
+- **Prueba exitosa si:** Devuelve 200 con los datos públicos del libro activo.
+
+---
+
+##### Caso de prueba: CP52 - Detalle en catálogo público para libro inhabilitado (SUP-5)
+- **Endpoint:** `GET /biblioteca/api/v1/catalogo/{id}`
+- **Método HTTP:** `GET`
+- **Descripción:** Consultar la ficha pública de un libro que fue inhabilitado lógicamente en CP47.
+- **Parámetros:** Path param: `id = {{idLibro}}`.
+- **Headers:** Ninguno.
+- **Body:** N/A.
+- **Código esperado:** `404 Not Found`
+- **Cuerpo esperado:** JSON de error con `status: 404` indicando que el libro no fue encontrado.
+- **Prueba exitosa si:** Devuelve 404 ocultando libros inhabilitados.
+
+---
+
+##### Caso de prueba: CP53 - POST /catalogo sin token no permitido (SUP-5)
+- **Endpoint:** `POST /biblioteca/api/v1/catalogo`
+- **Método HTTP:** `POST`
+- **Descripción:** Verificar que el catálogo público es de solo lectura (`GET`) y rechaza peticiones `POST` sin token.
+- **Parámetros:** Ninguno.
+- **Headers:** Ninguno.
+- **Body:** N/A.
+- **Código esperado:** `401 Unauthorized`
+- **Cuerpo esperado:** JSON de error con `status: 401`, `error: "No autenticado"`.
+- **Prueba exitosa si:** Devuelve 401 bloqueando escritura o acceso no permitido.
+
+---
+
 ### 6.2 Pruebas de Autenticación y Autorización
 
 Esta sección consolida la evaluación de los controles de seguridad implementados por `SecurityConfig`, `JwtAuthenticationFilter`, `JwtAuthenticationEntryPoint` y `JwtAccessDeniedHandler`:
@@ -1049,6 +1102,10 @@ A continuación se presenta la matriz de resultados de los 49 casos de prueba. D
 | **CP47** | Inhabilitar libro | `DELETE /libros/{id}` | ADMIN | `200 OK` | Pendiente de ejecución |
 | **CP48** | Búsqueda excluye libro inhabilitado | `GET /libros/buscar/titulo` | USER / ADMIN | `200 OK` | Pendiente de ejecución |
 | **CP49** | Disponibilidad de libro inhabilitado | `GET /libros/{id}/disponibilidad` | USER / ADMIN | `404 Not Found` | Pendiente de ejecución |
+| **CP50** | Catálogo público sin token (SUP-5) | `GET /catalogo` | PÚBLICO | `200 OK` | Pendiente de ejecución |
+| **CP51** | Detalle catálogo libro activo (SUP-5) | `GET /catalogo/{id}` | PÚBLICO | `200 OK` | Pendiente de ejecución |
+| **CP52** | Detalle catálogo libro inhabilitado (SUP-5) | `GET /catalogo/{id}` | PÚBLICO | `404 Not Found` | Pendiente de ejecución |
+| **CP53** | POST /catalogo sin token (SUP-5) | `POST /catalogo` | SIN TOKEN | `401 Unauthorized` | Pendiente de ejecución |
 
 ---
 
@@ -1214,6 +1271,18 @@ Ejecución de la prueba: (adjuntar captura)
 Ejecución de la prueba: (adjuntar captura)
 
 #### CP49 - Disponibilidad de libro inhabilitado (404)
+Ejecución de la prueba: (adjuntar captura)
+
+#### CP50 - Listar catálogo público sin autenticación (200)
+Ejecución de la prueba: (adjuntar captura)
+
+#### CP51 - Detalle de libro habilitado en catálogo público (200)
+Ejecución de la prueba: (adjuntar captura)
+
+#### CP52 - Detalle de catálogo público para libro inhabilitado (404)
+Ejecución de la prueba: (adjuntar captura)
+
+#### CP53 - POST /catalogo sin token (401)
 Ejecución de la prueba: (adjuntar captura)
 
 ---
