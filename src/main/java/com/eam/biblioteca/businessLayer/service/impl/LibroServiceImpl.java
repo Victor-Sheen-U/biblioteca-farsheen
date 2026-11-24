@@ -102,19 +102,19 @@ public class LibroServiceImpl implements LibroService {
     @Override
     @Transactional(readOnly = true)
     public List<LibroDTO> buscarPorTitulo(String titulo) {
-        return libroDao.buscarPorTitulo(titulo != null ? titulo.trim() : "");
+        return libroDao.buscarPorTitulo(escaparLike(titulo));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<LibroDTO> buscarPorGenero(String genero) {
-        return libroDao.buscarPorGenero(genero != null ? genero.trim() : "");
+        return libroDao.buscarPorGenero(escaparLike(genero));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<LibroDTO> buscarPorAutor(String autor) {
-        return libroDao.buscarPorAutor(autor != null ? autor.trim() : "");
+        return libroDao.buscarPorAutor(escaparLike(autor));
     }
 
     @Override
@@ -150,6 +150,7 @@ public class LibroServiceImpl implements LibroService {
         Map<Long, Integer> disponiblesPorLibro = ejemplarDao.contarDisponiblesEnInstantePorLibroHabilitado(ahora);
 
         return libros.stream()
+                .limit(500)
                 .map(libro -> mapearACatalogoDTO(
                         libro,
                         totalesPorLibro.getOrDefault(libro.getIdLibro(), 0),
@@ -188,6 +189,16 @@ public class LibroServiceImpl implements LibroService {
                 totalEjemplares,
                 disponibles
         );
+    }
+
+    private String escaparLike(String valor) {
+        if (valor == null) {
+            return "";
+        }
+        return valor.trim()
+                .replace("\\", "\\\\")
+                .replace("%", "\\%")
+                .replace("_", "\\_");
     }
 
     private void validarAutores(List<Long> idsPedidos, List<AutorEntity> autoresEncontrados) {

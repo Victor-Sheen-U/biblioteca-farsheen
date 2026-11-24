@@ -37,7 +37,7 @@ public class ReservaServiceImpl implements ReservaService {
         UsuarioEntity usuario = usuarioDao.findEntityByCorreo(correoNorm)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con correo: " + correoNorm));
 
-        LibroEntity libro = libroDao.findEntityById(dto.getIdLibro())
+        LibroEntity libro = libroDao.findEntityByIdForUpdate(dto.getIdLibro())
                 .orElseThrow(() -> new ResourceNotFoundException("Libro no encontrado con ID: " + dto.getIdLibro()));
 
         if (Boolean.FALSE.equals(libro.getEstado())) {

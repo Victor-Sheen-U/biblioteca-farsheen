@@ -25,6 +25,10 @@ public class LibroDao {
         return libroRepository.findById(id);
     }
 
+    public Optional<LibroEntity> findEntityByIdForUpdate(Long id) {
+        return libroRepository.findByIdForUpdate(id);
+    }
+
     public List<LibroEntity> findAllHabilitadosConRelaciones() {
         return libroRepository.findAllHabilitadosConRelaciones();
     }
