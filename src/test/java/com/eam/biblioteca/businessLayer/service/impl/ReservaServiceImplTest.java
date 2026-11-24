@@ -67,7 +67,7 @@ class ReservaServiceImplTest {
         EjemplarEntity e2 = new EjemplarEntity(102L, libro, EjemplarEntity.DISPONIBLE);
 
         when(usuarioDao.findEntityByCorreo(correo)).thenReturn(Optional.of(usuario));
-        when(libroDao.findEntityById(1L)).thenReturn(Optional.of(libro));
+        when(libroDao.findEntityByIdForUpdate(1L)).thenReturn(Optional.of(libro));
         when(ejemplarDao.findDisponiblesEnRango(1L, inicio, entrega)).thenReturn(List.of(e1, e2));
 
         ReservaDTO expectedDTO = new ReservaDTO(1L, 10L, "Juan", 101L, 1L, "Libro Test", LocalDateTime.now(), inicio, entrega, "ACTIVA");
@@ -106,7 +106,7 @@ class ReservaServiceImplTest {
         libro.setEstado(true);
 
         when(usuarioDao.findEntityByCorreo(correo)).thenReturn(Optional.of(usuario));
-        when(libroDao.findEntityById(1L)).thenReturn(Optional.of(libro));
+        when(libroDao.findEntityByIdForUpdate(1L)).thenReturn(Optional.of(libro));
         when(ejemplarDao.findDisponiblesEnRango(1L, inicio, entrega)).thenReturn(Collections.emptyList());
 
         // Act & Assert
@@ -122,7 +122,7 @@ class ReservaServiceImplTest {
         String correo = "usuario@biblioteca.com";
         ReservaCreateDTO dto = new ReservaCreateDTO(99L, LocalDateTime.now().plusDays(2), LocalDateTime.now().plusDays(5));
         when(usuarioDao.findEntityByCorreo(correo)).thenReturn(Optional.of(new UsuarioEntity()));
-        when(libroDao.findEntityById(99L)).thenReturn(Optional.empty());
+        when(libroDao.findEntityByIdForUpdate(99L)).thenReturn(Optional.empty());
 
         // Act & Assert
         ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () -> reservaService.crear(correo, dto));
@@ -141,7 +141,7 @@ class ReservaServiceImplTest {
         libro.setEstado(false);
 
         when(usuarioDao.findEntityByCorreo(correo)).thenReturn(Optional.of(new UsuarioEntity()));
-        when(libroDao.findEntityById(1L)).thenReturn(Optional.of(libro));
+        when(libroDao.findEntityByIdForUpdate(1L)).thenReturn(Optional.of(libro));
 
         // Act & Assert
         ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () -> reservaService.crear(correo, dto));
@@ -177,7 +177,7 @@ class ReservaServiceImplTest {
         libro.setEstado(true);
 
         when(usuarioDao.findEntityByCorreo(correo)).thenReturn(Optional.of(new UsuarioEntity()));
-        when(libroDao.findEntityById(1L)).thenReturn(Optional.of(libro));
+        when(libroDao.findEntityByIdForUpdate(1L)).thenReturn(Optional.of(libro));
 
         // Act & Assert
         BadRequestException ex = assertThrows(BadRequestException.class, () -> reservaService.crear(correo, dto));
@@ -199,7 +199,7 @@ class ReservaServiceImplTest {
         libro.setEstado(true);
 
         when(usuarioDao.findEntityByCorreo(correo)).thenReturn(Optional.of(new UsuarioEntity()));
-        when(libroDao.findEntityById(1L)).thenReturn(Optional.of(libro));
+        when(libroDao.findEntityByIdForUpdate(1L)).thenReturn(Optional.of(libro));
 
         // Act & Assert
         BadRequestException ex = assertThrows(BadRequestException.class, () -> reservaService.crear(correo, dto));

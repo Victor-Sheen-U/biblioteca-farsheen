@@ -419,4 +419,37 @@ class LibroServiceImplTest {
 
         assertThrows(ResourceNotFoundException.class, () -> libroService.obtenerLibroCatalogoPublico(99L));
     }
+
+    @Test
+    @DisplayName("listarCatalogoPublico aplica tope duro de 500 libros")
+    void listarCatalogoPublico_AplicaTopeDe500() {
+        GeneroEntity genero = new GeneroEntity(1L, "Ficción");
+        List<LibroEntity> muchos = new java.util.ArrayList<>();
+        for (long i = 1; i <= 520; i++) {
+            muchos.add(new LibroEntity(i, "978-000-" + i, "Libro " + i, genero, new HashSet<>(), 2020, true));
+        }
+        when(libroDao.findAllHabilitadosConRelaciones()).thenReturn(muchos);
+        when(ejemplarDao.contarTotalesPorLibroHabilitado()).thenReturn(java.util.Map.of());
+        when(ejemplarDao.contarDisponiblesEnInstantePorLibroHabilitado(any(LocalDateTime.class))).thenReturn(java.util.Map.of());
+
+        List<LibroCatalogoDTO> result = libroService.listarCatalogoPublico();
+
+        assertEquals(500, result.size());
+    }
+
+    @Test
+    @DisplayName("búsquedas LIKE escapan comodines %, _ y \\")
+    void busquedasLike_EscapanComodines() {
+        when(libroDao.buscarPorTitulo(any())).thenReturn(List.of());
+        when(libroDao.buscarPorGenero(any())).thenReturn(List.of());
+        when(libroDao.buscarPorAutor(any())).thenReturn(List.of());
+
+        libroService.buscarPorTitulo("100%_test\\x");
+        libroService.buscarPorGenero("Sci_Fi%");
+        libroService.buscarPorAutor("A_B%");
+
+        verify(libroDao).buscarPorTitulo("100\\%\\_test\\\\x");
+        verify(libroDao).buscarPorGenero("Sci\\_Fi\\%");
+        verify(libroDao).buscarPorAutor("A\\_B\\%");
+    }
 }

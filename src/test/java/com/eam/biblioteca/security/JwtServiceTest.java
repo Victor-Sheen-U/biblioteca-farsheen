@@ -4,6 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class JwtServiceTest {
@@ -14,6 +17,14 @@ class JwtServiceTest {
     @BeforeEach
     void setUp() {
         jwtService = new JwtService(SECRETO, 60000L);
+    }
+
+    @Test
+    @DisplayName("constructor rechaza secretos menores de 32 bytes")
+    void constructor_SecretoCorto_LanzaExcepcion() {
+        assertThrows(IllegalArgumentException.class, () -> new JwtService("secreto-corto", 60000L));
+        assertThrows(IllegalArgumentException.class, () -> new JwtService("", 60000L));
+        assertThrows(IllegalArgumentException.class, () -> new JwtService(null, 60000L));
     }
 
     @Test
@@ -56,6 +67,18 @@ class JwtServiceTest {
         String token = otroServicio.generarToken("test@biblioteca.com", "USUARIO");
 
         assertFalse(jwtService.esTokenValido(token));
+    }
+
+    @Test
+    @DisplayName("esTokenValido rechaza tokens con alg=none")
+    void esTokenValido_AlgNone_RetornaFalse() {
+        String header = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString("{\"alg\":\"none\",\"typ\":\"JWT\"}".getBytes(StandardCharsets.UTF_8));
+        String payload = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString("{\"sub\":\"admin@biblioteca.com\",\"rol\":\"ADMIN\"}".getBytes(StandardCharsets.UTF_8));
+        String algNoneToken = header + "." + payload + ".";
+
+        assertFalse(jwtService.esTokenValido(algNoneToken));
     }
 
     @Test

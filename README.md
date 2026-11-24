@@ -53,18 +53,28 @@ El proyecto se organiza bajo el paquete base `com.eam.biblioteca`:
 ### Opción A — Con MySQL / MariaDB (XAMPP en puerto 3307)
 
 1. Inicia el servicio MySQL/MariaDB en el puerto `3307`.
-2. Ejecuta con datos de demostración habilitados:
+2. Ejecuta con el seed idempotente del catálogo real (≥ 40 libros, perfil `seed`):
    ```bash
-   SEED_DEMO_DATA=true ./gradlew bootRun
+   SPRING_PROFILES_ACTIVE=dev,seed ./gradlew bootRun
    ```
 
 ### Opción B — Sin MySQL externo (Perfil `test` con H2 en memoria)
 
-Ideal para desarrollo rápido del frontend o pruebas de integración autónomas:
+Ideal para desarrollo rápido o pruebas automatizadas:
 
 ```bash
 SPRING_PROFILES_ACTIVE=test SEED_DEMO_DATA=true ./gradlew bootRun
 ```
+
+### Opción C — Producción (`prod`)
+
+Requiere definir sin valores por defecto: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `JWT_SECRET` (mín. 32 bytes), `ADMIN_PASSWORD` y `CORS_ALLOWED_ORIGINS`.
+
+```bash
+SPRING_PROFILES_ACTIVE=prod ./gradlew bootRun
+```
+
+Consulta [docs/FLUJO_DEL_SISTEMA.md](docs/FLUJO_DEL_SISTEMA.md) para el diagrama de capas y flujos de reserva/seguridad.
 
 ### URLs del Servidor
 
