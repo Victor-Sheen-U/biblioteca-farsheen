@@ -1,10 +1,9 @@
 package com.eam.biblioteca.persistenceLayer.repository;
 
 import com.eam.biblioteca.persistenceLayer.entity.LibroEntity;
-import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -15,9 +14,9 @@ import java.util.Optional;
 @Repository
 public interface LibroRepository extends JpaRepository<LibroEntity, Long> {
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT l FROM LibroEntity l WHERE l.idLibro = :id")
-    Optional<LibroEntity> findByIdForUpdate(@Param("id") Long id);
+    @Modifying
+    @Query("UPDATE LibroEntity l SET l.estado = l.estado WHERE l.idLibro = :id")
+    void lockById(@Param("id") Long id);
 
     Optional<LibroEntity> findByIsbn(String isbn);
 
